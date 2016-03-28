@@ -129,7 +129,7 @@ gulp.task('build', function(cb) {
 });
 
 gulp.task('production', function(cb){
-  runSequence(['build:clean'],
+  runSequence(['build:clean', 'build:svg', 'build:scripts', 'build:images', 'build:styles'],
               'production:jekyll',
               cb);
 });
@@ -175,7 +175,7 @@ gulp.task('serve', ['build'], function() {
 
   // Watch Jekyll posts
   gulp.watch('_posts/**/*.+(md|markdown|MD)', ['build:jekyll:watch']);
-    
+
   // Watch Jekyll Collections
   gulp.watch('**/*.+(md|markdown|MD)', ['build:jekyll:watch']);
 
@@ -184,7 +184,7 @@ gulp.task('serve', ['build'], function() {
 
   // Watch SVG
   gulp.watch('_app/assets/**.*.svg', ['build:svg:watch']);
-    
+
   // Watch Jekyll drafts if --drafts flag was passed
   if (config.drafts) {
     gulp.watch('_drafts/*.+(md|markdown|MD)', ['build:jekyll:watch']);

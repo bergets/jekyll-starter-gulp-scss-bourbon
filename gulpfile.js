@@ -10,10 +10,10 @@ var gulp = require('gulp'),
   gutil = require('gulp-util'),
   runSequence = require('run-sequence'),
   size = require('gulp-size'),
-  run = require('gulp-run'),
   del = require('del'),
   svgSprite = require('gulp-svg-sprite'),
-  plumber = require('gulp-plumber');
+  plumber = require('gulp-plumber'),
+  exec = require('child_process').exec;
 
 var appDir = './_app';
 var jekyllDir = './';
@@ -96,22 +96,26 @@ gulp.task('build:scripts', function() {
     .on('error', gutil.log);
 });
 
-gulp.task('build:jekyll', function() {
+gulp.task('build:jekyll', function(cb) {
   var shellCommand = 'jekyll build --config _config.yml,_app/localhost_config.yml';
   if (config.drafts) { shellCommand += ' --drafts'; };
 
-  return gulp.src(jekyllDir)
-    .pipe(run(shellCommand))
-    .on('error', gutil.log);
+    exec(shellCommand, function (err, stdout, stderr) {
+      console.log(stdout);
+      console.log(stderr);
+      cb(err);
+    });
 });
 
-gulp.task('production:jekyll', function() {
+gulp.task('production:jekyll', function(cb) {
   var shellCommand = 'jekyll build --config _config.yml';
   if (config.drafts) { shellCommand += ' --drafts'; };
 
-  return gulp.src(jekyllDir)
-    .pipe(run(shellCommand))
-    .on('error', gutil.log);
+    exec(shellCommand, function (err, stdout, stderr) {
+      console.log(stdout);
+      console.log(stderr);
+      cb(err);
+    });
 });
 
 gulp.task('build:clean', function (){
@@ -125,7 +129,7 @@ gulp.task('build', function(cb) {
 });
 
 gulp.task('production', function(cb){
-  runSequence(['build:clean'],
+  runSequence(['build:clean', 'build:svg', 'build:scripts', 'build:images', 'build:styles'],
               'production:jekyll',
               cb);
 });
@@ -171,7 +175,7 @@ gulp.task('serve', ['build'], function() {
 
   // Watch Jekyll posts
   gulp.watch('_posts/**/*.+(md|markdown|MD)', ['build:jekyll:watch']);
-    
+
   // Watch Jekyll Collections
   gulp.watch('**/*.+(md|markdown|MD)', ['build:jekyll:watch']);
 
@@ -180,7 +184,7 @@ gulp.task('serve', ['build'], function() {
 
   // Watch SVG
   gulp.watch('_app/assets/**.*.svg', ['build:svg:watch']);
-    
+
   // Watch Jekyll drafts if --drafts flag was passed
   if (config.drafts) {
     gulp.watch('_drafts/*.+(md|markdown|MD)', ['build:jekyll:watch']);

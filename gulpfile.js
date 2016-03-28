@@ -105,8 +105,17 @@ gulp.task('build:jekyll', function() {
     .on('error', gutil.log);
 });
 
+gulp.task('production:jekyll', function() {
+  var shellCommand = 'jekyll build --config _config.yml';
+  if (config.drafts) { shellCommand += ' --drafts'; };
+
+  return gulp.src(jekyllDir)
+    .pipe(run(shellCommand))
+    .on('error', gutil.log);
+});
+
 gulp.task('build:clean', function (){
-  del([paths.image.jekyll, paths.image.site, jekyllDir + paths.svg.sprite])
+  del([paths.image.jekyll, paths.image.site, jekyllDir + paths.svg.sprite, paths.js.jekyll, paths.js.site, paths.css.site, paths.css.jekyll])
 });
 
 gulp.task('build', function(cb) {
@@ -116,8 +125,8 @@ gulp.task('build', function(cb) {
 });
 
 gulp.task('production', function(cb){
-  runSequence(['build:clean', 'build'],
-              'build:jekyll',
+  runSequence(['build:clean'],
+              'production:jekyll',
               cb);
 });
 
@@ -130,6 +139,17 @@ gulp.task('build:scripts:watch', ['build:scripts'], function(cb) {
   browserSync.reload();
   cb();
 });
+
+gulp.task('build:images:watch', ['build:images'], function(cb){
+  browserSync.reload();
+  cb();
+});
+
+gulp.task('build:svg:watch', ['build:svg'], function(cb){
+  browserSync.reload();
+  cb();
+});
+
 
 gulp.task('serve', ['build'], function() {
 
@@ -151,7 +171,16 @@ gulp.task('serve', ['build'], function() {
 
   // Watch Jekyll posts
   gulp.watch('_posts/**/*.+(md|markdown|MD)', ['build:jekyll:watch']);
+    
+  // Watch Jekyll Collections
+  gulp.watch('**/*.+(md|markdown|MD)', ['build:jekyll:watch']);
 
+  // Watch Images
+  gulp.watch('_app/assets/**/*.{jpg,jpeg,png,gif}', ['build:images:watch']);
+
+  // Watch SVG
+  gulp.watch('_app/assets/**.*.svg', ['build:svg:watch']);
+    
   // Watch Jekyll drafts if --drafts flag was passed
   if (config.drafts) {
     gulp.watch('_drafts/*.+(md|markdown|MD)', ['build:jekyll:watch']);

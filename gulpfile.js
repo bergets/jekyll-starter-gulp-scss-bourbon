@@ -10,10 +10,10 @@ var gulp = require('gulp'),
   gutil = require('gulp-util'),
   runSequence = require('run-sequence'),
   size = require('gulp-size'),
-  run = require('gulp-run'),
   del = require('del'),
   svgSprite = require('gulp-svg-sprite'),
-  plumber = require('gulp-plumber');
+  plumber = require('gulp-plumber'),
+  exec = require('child_process').exec;
 
 var appDir = './_app';
 var jekyllDir = './';
@@ -96,22 +96,26 @@ gulp.task('build:scripts', function() {
     .on('error', gutil.log);
 });
 
-gulp.task('build:jekyll', function() {
+gulp.task('build:jekyll', function(cb) {
   var shellCommand = 'jekyll build --config _config.yml,_app/localhost_config.yml';
   if (config.drafts) { shellCommand += ' --drafts'; };
 
-  return gulp.src(jekyllDir)
-    .pipe(run(shellCommand))
-    .on('error', gutil.log);
+    exec(shellCommand, function (err, stdout, stderr) {
+      console.log(stdout);
+      console.log(stderr);
+      cb(err);
+    });
 });
 
-gulp.task('production:jekyll', function() {
+gulp.task('production:jekyll', function(cb) {
   var shellCommand = 'jekyll build --config _config.yml';
   if (config.drafts) { shellCommand += ' --drafts'; };
 
-  return gulp.src(jekyllDir)
-    .pipe(run(shellCommand))
-    .on('error', gutil.log);
+    exec(shellCommand, function (err, stdout, stderr) {
+      console.log(stdout);
+      console.log(stderr);
+      cb(err);
+    });
 });
 
 gulp.task('build:clean', function (){
